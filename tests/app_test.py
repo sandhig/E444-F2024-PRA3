@@ -1,12 +1,11 @@
-import os
 import json
 import pytest
 from pathlib import Path
 
-from project import models
 from project.app import app, db
 
 TEST_DB = "test.db"
+
 
 @pytest.fixture
 def client():
@@ -20,6 +19,7 @@ def client():
         yield app.test_client()  # tests run here
         db.drop_all()  # teardown
 
+
 def login(client, username, password):
     """Login helper function"""
     return client.post(
@@ -28,23 +28,28 @@ def login(client, username, password):
         follow_redirects=True,
     )
 
+
 def logout(client):
     """Logout helper function"""
     return client.get("/logout", follow_redirects=True)
 
+
 def test_index(client):
     response = client.get("/", content_type="html/text")
     assert response.status_code == 200
+
 
 def test_database(client):
     """initial test. ensure that the database exists"""
     tester = Path("test.db").is_file()
     assert tester
 
+
 def test_empty_db(client):
     """Ensure database is blank"""
     rv = client.get("/")
     assert b"No entries yet. Add some!" in rv.data
+
 
 def test_login_logout(client):
     """Test login and logout using helper functions"""
@@ -56,6 +61,7 @@ def test_login_logout(client):
     assert b"Invalid username" in rv.data
     rv = login(client, app.config["USERNAME"], app.config["PASSWORD"] + "x")
     assert b"Invalid password" in rv.data
+
 
 def test_messages(client):
     """Ensure that user can post messages"""
@@ -69,16 +75,18 @@ def test_messages(client):
     assert b"&lt;Hello&gt;" in rv.data
     assert b"<strong>HTML</strong> allowed here" in rv.data
 
+
 def test_delete_message(client):
     """Ensure the messages are being deleted"""
     rv = client.get("/delete/1")
     data = json.loads(rv.data)
     assert data["status"] == 0
-    
+
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
     rv = client.get("/delete/1")
     data = json.loads(rv.data)
     assert data["status"] == 1
+
 
 def test_search_with_query(client):
     """Test the search endpoint with a query."""
@@ -91,8 +99,9 @@ def test_search_with_query(client):
 
     rv = client.get('/search/?query=hello')
     print(rv.data)
-    assert b"&lt;Hello&gt;" in rv.data # title of post returned
-    assert b"<strong>HTML</strong> allowed here" in rv.data # content of post returned
+    assert b"&lt;Hello&gt;" in rv.data  # title of post returned
+    assert b"<strong>HTML</strong> allowed here" in rv.data  # content of post returned
+
 
 def test_search_without_query(client):
     """Test the search endpoint without a query."""
