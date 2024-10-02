@@ -3,6 +3,7 @@ import json
 import pytest
 from pathlib import Path
 
+from project import models
 from project.app import app, db
 
 TEST_DB = "test.db"
@@ -73,3 +74,23 @@ def test_delete_message(client):
     rv = client.get('/delete/1')
     data = json.loads(rv.data)
     assert data["status"] == 1
+
+def test_search_with_query(client):
+    """Test the search endpoint with a query."""
+    login(client, app.config["USERNAME"], app.config["PASSWORD"])
+    client.post(
+        "/add",
+        data=dict(title="<Hello>", text="<strong>HTML</strong> allowed here"),
+        follow_redirects=True,
+    )
+
+    rv = client.get('/search/?query=hello')
+    print(rv.data)
+    assert b"&lt;Hello&gt;" in rv.data # title of post returned
+    assert b"<strong>HTML</strong> allowed here" in rv.data # content of post returned
+
+def test_search_without_query(client):
+    """Test the search endpoint without a query."""
+    login(client, app.config["USERNAME"], app.config["PASSWORD"])
+    rv = client.get('/search/')
+    assert b'Search' in rv.data  # just search button, no post returned
