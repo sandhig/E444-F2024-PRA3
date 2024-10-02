@@ -97,7 +97,7 @@ def test_search_with_query(client):
         follow_redirects=True,
     )
 
-    rv = client.get('/search/?query=hello')
+    rv = client.get("/search/?query=hello")
     print(rv.data)
     assert b"&lt;Hello&gt;" in rv.data  # title of post returned
     assert b"<strong>HTML</strong> allowed here" in rv.data  # content of post returned
@@ -106,5 +106,5 @@ def test_search_with_query(client):
 def test_search_without_query(client):
     """Test the search endpoint without a query."""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
-    rv = client.get('/search/')
-    assert b'Search' in rv.data  # just search button, no post returned
+    rv = client.get("/search/")
+    assert b"Search" in rv.data  # just search button, no post returned
